@@ -48,6 +48,7 @@ public class SpringContext implements Context {
 		beanFactory = (DefaultListableBeanFactory)ctx.getAutowireCapableBeanFactory();
 	}
 
+	//从IOC容器中获取对应的bean
 	@SuppressWarnings("unchecked")
 	public <T> T find(Class<T> clazz) {
 		String[] names = applicationContext.getBeanNamesForType(clazz);
@@ -61,6 +62,7 @@ public class SpringContext implements Context {
 		return null;
 	}
 
+	//从IOC容器中获取对应的bean数组
 	@SuppressWarnings("unchecked")
 	public <T> List<T> findList(Class<T> clazz) {
 		String[] names = applicationContext.getBeanNamesForType(clazz);
@@ -71,6 +73,7 @@ public class SpringContext implements Context {
 		return beans;
 	}
 
+	//根据name和Class从IOC容器中获取对应的bean
 	public <T> T findByName(String name, Class<T> clazz) {
 		return applicationContext.getBean(name, clazz);
 	}
@@ -82,17 +85,13 @@ public class SpringContext implements Context {
 		log.warn("spring不支持向applicationContext中直接添加对象");
 	}
 	
-	/**
-	 * 向spring添加bean的定义
-	 */
+	//根据name和Class向IOC容器中注册bean
 	public void put(String name, Class<?> clazz) {
 		BeanDefinition definition = new RootBeanDefinition(clazz);
 		beanFactory.registerBeanDefinition(name, definition);
 	}
 
-	/**
-	 * 判断是否存在服务
-	 */
+	//根据name判断容器中是否存在对应的bean
 	public boolean exist(String name) {
 		return applicationContext.containsBean(name);
 	}

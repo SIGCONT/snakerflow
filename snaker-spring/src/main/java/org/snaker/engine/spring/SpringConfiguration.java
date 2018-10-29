@@ -29,6 +29,10 @@ public class SpringConfiguration extends Configuration {
 	 */
 	private ApplicationContext applicationContext;
 	
+	//构造函数，保存传进来的ApplicationContext到字段里，没什么用
+	//还有一个步骤很重要，传进IOC容器以构造SpringContext，并把SpringContext传给snaker的服务注册中心ServiceContext
+	//SpringContext和ServiceContext都继承了snaker定义的服务注册中心接口
+	//类之间采用关联关系，最终的操作顺序ServiceContext->SpringContext->ApplicationContext最终还是调用到传进来的IOC容器
 	public SpringConfiguration(ApplicationContext ctx) {
 		super(new SpringContext(ctx));
 		this.applicationContext = ctx;

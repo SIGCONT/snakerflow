@@ -28,6 +28,9 @@ import org.snaker.engine.helper.AssertHelper;
  * @author yuqs
  * @since 1.5
  */
+
+//snaker的服务注册中心，context中保存的是外部传进来的IOC容器SpringContext
+//采用关联模式，调用都委托给context中持有的SpringContext
 public abstract class ServiceContext {
 	private static final Logger log = LoggerFactory.getLogger(ServiceContext.class);
 	

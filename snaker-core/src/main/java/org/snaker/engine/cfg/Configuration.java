@@ -153,7 +153,7 @@ public class Configuration {
 	 * @param resource 资源
 	 */
 	private void parser(String resource) {
-		//解析所有配置节点，并实例化class指定的类
+		//解析所有配置节点，最终会构造BeanDefinition注册到IOC容器中
 		DocumentBuilder documentBuilder = XmlHelper.createDocumentBuilder();
 		try {
 			if (documentBuilder != null) {
