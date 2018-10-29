@@ -50,6 +50,9 @@ import org.snaker.engine.model.TransitionModel;
  * @author yuqs
  * @since 1.0
  */
+
+//snaker主类按照bean规范构建，不依赖于特定的IOC容器，属性可以由容器类根据xml装配
+//还有部分类由snaker服务中心负责管理
 public class SnakerEngineImpl implements SnakerEngine {
 	private static final Logger log = LoggerFactory.getLogger(SnakerEngineImpl.class);
 	/**
@@ -191,8 +194,12 @@ public class SnakerEngineImpl implements SnakerEngine {
 	 */
 	public Order startInstanceById(String id, String operator, Map<String, Object> args) {
 		if(args == null) args = new HashMap<String, Object>();
+
+		//获取id对应的流程对象
 		Process process = process().getProcessById(id);
 		process().check(process, id);
+
+		//向下中转调用，传入process流程对象，操作人operator，用户提交的参数args
 		return startProcess(process, operator, args);
 	}
 	
@@ -233,8 +240,14 @@ public class SnakerEngineImpl implements SnakerEngine {
 		return startProcess(process, operator, args);
 	}
 
+
+	//发起一个流程实例，传入参数process流程对象，operator操作人，用户提交的参数args
 	private Order startProcess(Process process, String operator, Map<String, Object> args) {
+
+		//创建order并得到执行对象，其中保存了engine、process、order、args
 		Execution execution = execute(process, operator, args, null, null);
+		//process的ProcessModel不知道在什么地方设置进去，但是很重要？？？
+		//拦截器的调用就是在Model类的execute方法中，前后置拦截器的调用都是在order创建之前
 		if(process.getModel() != null) {
 			StartModel start = process.getModel().getStart();
 			AssertHelper.notNull(start, "流程定义[name=" + process.getName() + ", version=" + process.getVersion() + "]没有开始节点");
@@ -267,12 +280,16 @@ public class SnakerEngineImpl implements SnakerEngine {
 	 * @param parentNodeName 启动子流程的父流程节点名称
 	 * @return Execution
 	 */
+
+	//创建流程实例，并返回执行对象，传入的参数process流程对象，operator操作人，用户提交的参数args
 	private Execution execute(Process process, String operator, Map<String, Object> args, 
 			String parentId, String parentNodeName) {
 		Order order = order().createOrder(process, operator, args, parentId, parentNodeName);
 		if(log.isDebugEnabled()) {
 			log.debug("创建流程实例对象:" + order);
 		}
+
+		//创建执行对象实体，传入engine当前snaker主体类，process流程对象，order新创建的实例对象，args用户提交的map参数
 		Execution current = new Execution(this, process, order, args);
 		current.setOperator(operator);
 		return current;
@@ -281,6 +298,8 @@ public class SnakerEngineImpl implements SnakerEngine {
 	/**
 	 * 根据任务主键ID执行任务
 	 */
+
+	//根据任务id执行指定的任务，向下中转调用，最后调用参数最多的重载方法
 	public List<Task> executeTask(String taskId) {
 		return executeTask(taskId, null);
 	}
@@ -298,7 +317,11 @@ public class SnakerEngineImpl implements SnakerEngine {
 	public List<Task> executeTask(String taskId, String operator, Map<String, Object> args) {
 		//完成任务，并且构造执行对象
 		Execution execution = execute(taskId, operator, args);
-		if(execution == null) return Collections.emptyList();
+
+		//如果是协办任务，则不产生执行对象
+		if(execution == null) 
+			return Collections.emptyList();
+
 		ProcessModel model = execution.getProcess().getModel();
 		if(model != null) {
 			NodeModel nodeModel = model.getNode(execution.getTask().getTaskName());
@@ -363,6 +386,8 @@ public class SnakerEngineImpl implements SnakerEngine {
 		}
 		Order order = query().getOrder(task.getOrderId());
 		AssertHelper.notNull(order, "指定的流程实例[id=" + task.getOrderId() + "]已完成或不存在");
+
+		//更新order的操作人信息
 		order.setLastUpdator(operator);
 		order.setLastUpdateTime(DateHelper.getTime());
 		order().updateOrder(order);
@@ -370,6 +395,8 @@ public class SnakerEngineImpl implements SnakerEngine {
 		if(!task.isMajor()) {
 			return null;
 		}
+
+		//遍历order的参数列表，如果args中没有则添加到args中，会导致用户修改了提交数据又还原的问题
 		Map<String, Object> orderMaps = order.getVariableMap();
 		if(orderMaps != null) {
 			for(Map.Entry<String, Object> entry : orderMaps.entrySet()) {
@@ -380,6 +407,8 @@ public class SnakerEngineImpl implements SnakerEngine {
 			}
 		}
 		Process process = process().getProcessById(order.getProcessId());
+
+		//直接调用构造函数，execution只作为存储数据的实体
 		Execution execution = new Execution(this, process, order, args);
 		execution.setOperator(operator);
 		execution.setTask(task);

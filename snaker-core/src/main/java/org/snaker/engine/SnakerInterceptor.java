@@ -21,6 +21,9 @@ import org.snaker.engine.core.Execution;
  * @author yuqs
  * @since 1.2
  */
+
+//snaker拦截器，提供Execution对象给用户代码获取
+//不会对snaker执行流程产生影响
 public interface SnakerInterceptor {
 	/**
 	 * 拦截方法，参数为执行对象

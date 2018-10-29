@@ -32,9 +32,13 @@ public class SpringSnakerEngine extends SnakerEngineImpl
 	private ApplicationContext applicationContext;
     private Properties properties;
 
+
+    //容器放开的bean初始化方法，在bean被实例化且属性都注入后被调用
 	public void afterPropertiesSet() throws Exception {
         SpringConfiguration configuration = new SpringConfiguration(applicationContext);
         if(properties != null) configuration.initProperties(properties);
+
+        //用容器构造configuration对象，并且开始snaker的配置解析和初始化工作,configuration对象用完即弃
         configuration.parser();
 	}
 

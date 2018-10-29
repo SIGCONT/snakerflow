@@ -46,8 +46,12 @@ public class OrderService extends AccessService implements IOrderService {
 	/**
 	 * 创建活动实例
 	 */
+
+	//创建活动实例对象，传入参数process流程对象，operator操作人，args用户提交的数据
 	public Order createOrder(Process process, String operator, Map<String, Object> args, 
 			String parentId, String parentNodeName) {
+
+		//实例化order对象，主要设置属性creator为operator，processId
 		Order order = new Order();
 		order.setId(StringHelper.getPrimaryKey());
 		order.setParentId(parentId);
@@ -71,6 +75,7 @@ public class OrderService extends AccessService implements IOrderService {
             }
 		}
 
+		//用户提交的map参数转化为json字符串
 		order.setVariable(JsonHelper.toJson(args));
 		saveOrder(order);
 		return order;
@@ -107,6 +112,8 @@ public class OrderService extends AccessService implements IOrderService {
 	/**
 	 * 流程实例数据会保存至活动实例表、历史实例表
 	 */
+
+	//发起流程的时候同时插入order和history表，history表中的记录状态为活动状态
 	public void saveOrder(Order order) {
 		HistoryOrder history = new HistoryOrder(order);
 		history.setOrderState(STATE_ACTIVE);

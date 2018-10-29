@@ -70,12 +70,17 @@ public abstract class NodeModel extends BaseModel implements Action {
 	 * 具体节点模型需要完成的执行逻辑
 	 * @param execution 执行对象
 	 */
+
+	//留给子类实现的空方法
 	protected abstract void exec(Execution execution);
 	
 	/**
 	 * 对执行逻辑增加前置、后置拦截处理
 	 * @param execution 执行对象
 	 */
+
+	//模板方法，指定执行流程，exec方法留给子类实现
+	//每次NodeModel类的execute方法被调用，都会把execution交给所有的拦截器去调用
 	public void execute(Execution execution) {
 		intercept(preInterceptorList, execution);
 		exec(execution);
@@ -86,6 +91,8 @@ public abstract class NodeModel extends BaseModel implements Action {
 	 * 运行变迁继续执行
 	 * @param execution 执行对象
 	 */
+
+	//遍历输出变迁集合，和拦截器类似，把execution交给每一个变迁对象执行，不会对执行流程产生影响
 	protected void runOutTransition(Execution execution) {
 		for (TransitionModel tm : getOutputs()) {
 			tm.setEnabled(true);
@@ -98,6 +105,8 @@ public abstract class NodeModel extends BaseModel implements Action {
 	 * @param interceptorList 拦截器列表
 	 * @param execution 执行对象
 	 */
+
+	//调用拦截器的中转方法，把execution交给每一个拦截器执行，不会对执行流程产生影响
 	private void intercept(List<SnakerInterceptor> interceptorList, Execution execution) {
 		try {
 			for(SnakerInterceptor interceptor : interceptorList) {
@@ -180,6 +189,8 @@ public abstract class NodeModel extends BaseModel implements Action {
 		return preInterceptors;
 	}
 
+	//给拦截器集合中添加拦截器，传入拦截器类名，多个类名用逗号分割
+	//实例化为对象后添加到集合中
 	public void setPreInterceptors(String preInterceptors) {
 		this.preInterceptors = preInterceptors;
 		if(StringHelper.isNotEmpty(preInterceptors)) {
@@ -194,6 +205,8 @@ public abstract class NodeModel extends BaseModel implements Action {
 		return postInterceptors;
 	}
 
+	//给拦截器集合中添加拦截器，传入拦截器类名，多个类名用逗号分割
+	//实例化为对象后添加到集合中
 	public void setPostInterceptors(String postInterceptors) {
 		this.postInterceptors = postInterceptors;
 		if(StringHelper.isNotEmpty(postInterceptors)) {

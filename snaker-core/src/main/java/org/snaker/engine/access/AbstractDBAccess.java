@@ -529,8 +529,14 @@ public abstract class AbstractDBAccess implements DBAccess {
 		return queryList(CCOrder.class, where.toString(), ArrayUtils.add(actorIds, 0, orderId));
 	}
 
+	//根据流程定义ID获取流程对象，snaker自己实现的DAO，直接返回了对应的实体
+	//其中有部分属性需要重新构建，比如ProcessModel
 	public Process getProcess(String id) {
 		String where = " where id = ?";
+
+		//拼接查询语句，返回流程对象
+		//查询语句select id,name,display_Name,type,instance_Url,state, content, version,create_Time,creator from wf_process 
+		//其中没有ProcessModel属性
 		return queryObject(Process.class, QUERY_PROCESS + where, id);
 	}
 	
@@ -648,6 +654,8 @@ public abstract class AbstractDBAccess implements DBAccess {
         return queryList(page, filter, Order.class, sql.toString(), paramList.toArray());
 	}
 
+
+	//snaker实现的DAO方法， 获取当前的活动任务
 	public List<Task> getActiveTasks(Page<Task> page, QueryFilter filter) {
         StringBuilder sql = new StringBuilder(QUERY_TASK);
 		boolean isFetchActor = filter.getOperators() != null && filter.getOperators().length > 0;

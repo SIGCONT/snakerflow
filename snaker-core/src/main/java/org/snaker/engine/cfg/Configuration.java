@@ -125,7 +125,11 @@ public class Configuration {
 		if (StringHelper.isEmpty(config)) {
 			config = USER_CONFIG_FILE;
 		}
+
+		//解析完成后服务中心里就有了snaker所要用的名称和类型，后续使用可以直接从服务中心获取
+		//解析用户自定义配置文件 snaker.xml
 		parser(config);
+		//解析固定配置文件 base.config.xml，其中都是snaker的节点对应的parser类
 		parser(BASE_CONFIG_FILE);
 		if (!isCMB()) {
 		    parser(EXT_CONFIG_FILE);
@@ -156,9 +160,12 @@ public class Configuration {
 				InputStream input = StreamHelper.openStream(resource);
 				if(input == null) return;
 				Document doc = documentBuilder.parse(input);
+				//snaker配置文件中以config为根节点，子节点都是bean元素
 				Element configElement = doc.getDocumentElement();
 				NodeList nodeList = configElement.getChildNodes();
 				int nodeSize = nodeList.getLength();
+
+				//遍历snaker配置文件中的bean元素，向服务工厂ServiceContext中注册名称和类型
 				for(int i = 0; i < nodeSize; i++) {
 					Node node = nodeList.item(i);
 					if (node.getNodeType() == Node.ELEMENT_NODE) {

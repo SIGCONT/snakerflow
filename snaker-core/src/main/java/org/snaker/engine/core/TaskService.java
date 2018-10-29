@@ -44,6 +44,8 @@ public class TaskService extends AccessService implements ITaskService {
 	/**
 	 * 完成指定任务
 	 */
+
+	//完成指定任务，向下调用参数更多的重载方法
 	public Task complete(String taskId) {
 		return complete(taskId, null, null);
 	}
@@ -67,6 +69,8 @@ public class TaskService extends AccessService implements ITaskService {
 		if(!isAllowed(task, operator)) {
 			throw new SnakerException("当前参与者[" + operator + "]不允许执行任务[taskId=" + taskId + "]");
 		}
+
+		//复制所有的字段到history中
 		HistoryTask history = new HistoryTask(task);
 		history.setFinishTime(DateHelper.getTime());
 		history.setTaskState(STATE_FINISH);
@@ -79,12 +83,18 @@ public class TaskService extends AccessService implements ITaskService {
 			}
 			history.setActorIds(actorIds);
 		}
+
+		//把task添加到history表中，同时删除活动task
 		access().saveHistory(history);
 		access().deleteTask(task);
+
+		//completion工具类，任务完成时的触发动作，当前是打出日志
         Completion completion = getCompletion();
         if(completion != null) {
             completion.complete(history);
-        }
+		}
+		
+		//返回的还是活动task的实体对象
 		return task;
 	}
 

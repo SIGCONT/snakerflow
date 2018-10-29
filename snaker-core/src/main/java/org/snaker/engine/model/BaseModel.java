@@ -24,6 +24,8 @@ import org.snaker.engine.handlers.IHandler;
  * @author yuqs
  * @since 1.0
  */
+
+//BaseModel只有name和displayName两个属性
 public class BaseModel implements Serializable {
 	/**
 	 * 
@@ -43,6 +45,8 @@ public class BaseModel implements Serializable {
 	 * @param handler
 	 * @param execution
 	 */
+
+	//仅起到中转调用的效果，不会改变自身状态
 	protected void fire(IHandler handler, Execution execution) {
 		handler.handle(execution);
 	}

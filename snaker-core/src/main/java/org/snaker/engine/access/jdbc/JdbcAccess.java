@@ -173,6 +173,7 @@ public class JdbcAccess extends AbstractDBAccess implements DBAccess {
         }
 	}
 
+	//snaker实现的DAO层，根据sql返回对应的实体
 	public <T> T queryObject(Class<T> clazz, String sql, Object... args) {
     	List<T> result = null;
         try {
