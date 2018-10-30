@@ -41,12 +41,16 @@ public class ModelParser {
 	 * 解析流程定义文件，并将解析后的对象放入模型容器中
 	 * @param bytes
 	 */
+
+	//解析流程定义xml文件，返回顶层Model对象
 	public static ProcessModel parse(byte[] bytes) {
 		DocumentBuilder documentBuilder = XmlHelper.createDocumentBuilder();
 		if(documentBuilder != null) {
 			Document doc = null;
 			try {
 				doc = documentBuilder.parse(new ByteArrayInputStream(bytes));
+
+				//获取顶层process元素及属性填充到 ProcessModel 中
 				Element processE = doc.getDocumentElement();
 				ProcessModel process = new ProcessModel();
 				process.setName(processE.getAttribute(NodeParser.ATTR_NAME));
@@ -54,8 +58,10 @@ public class ModelParser {
 				process.setExpireTime(processE.getAttribute(NodeParser.ATTR_EXPIRETIME));
 				process.setInstanceUrl(processE.getAttribute(NodeParser.ATTR_INSTANCEURL));
 				process.setInstanceNoClass(processE.getAttribute(NodeParser.ATTR_INSTANCENOCLASS));
+
 				NodeList nodeList = processE.getChildNodes();
 				int nodeSize = nodeList.getLength();
+				//遍历process元素下的子元素，解析得到NodeModel,填充到process的List<NodeModel> nodes字段中
 				for(int i = 0; i < nodeSize; i++) {
 					Node node = nodeList.item(i);
 					if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -76,6 +82,8 @@ public class ModelParser {
 						}
 					}
 				}
+
+				//返回填充好的顶层ProcessModel
 				return process;
 			} catch (SAXException e) {
 				e.printStackTrace();
@@ -98,6 +106,8 @@ public class ModelParser {
 		Element element = (Element)node;
 		NodeParser nodeParser = null;
 		try {
+			//根据元素名称从IOC容器中查找对应的parser来解析
+			//parser的定义存储在base.config.xml中，在engine类的初始化阶段解析到IOC容器中
 			nodeParser = ServiceContext.getContext().findByName(nodeName, NodeParser.class);
 			nodeParser.parse(element);
 			return nodeParser.getModel();

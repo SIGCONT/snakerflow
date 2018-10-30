@@ -169,6 +169,8 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	 * 根据流程定义xml的输入流解析为字节数组，保存至数据库中，并且put到缓存中
 	 * @param input 定义输入流
 	 */
+
+	//传入参数input流程定义的xml文件，返回流程Id，向下中转调用重载方法
 	public String deploy(InputStream input) {
 		return deploy(input, null);
 	}
@@ -182,8 +184,12 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 		AssertHelper.notNull(input);
 		try {
 			byte[] bytes = StreamHelper.readBytes(input);
+
+			//解析流程定义xml文件，得到填充好的顶层Model
 			ProcessModel model = ModelParser.parse(bytes);
 			Integer version = access().getLatestProcessVersion(model.getName());
+
+			//构造process并填充属性
 			Process entity = new Process();
 			entity.setId(StringHelper.getPrimaryKey());
 			if(version == null || version < 0) {
