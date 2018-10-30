@@ -52,9 +52,8 @@ public class CreateTaskHandler implements IHandler {
 	public void handle(Execution execution) {
 		List<Task> tasks = execution.getEngine().task().createTask(model, execution);
 		execution.addTasks(tasks);
-		/**
-		 * 从服务上下文中查找任务拦截器列表，依次对task集合进行拦截处理
-		 */
+		
+		//从IOC容器中查找拦截器列表，把execution对象交给每一个拦截器调用，不对执行流程产生影响
 		List<SnakerInterceptor> interceptors = ServiceContext.getContext().findList(SnakerInterceptor.class);
 		try {
 			for(SnakerInterceptor interceptor : interceptors) {

@@ -57,25 +57,27 @@ public class TaskService extends AccessService implements ITaskService {
 		return complete(taskId, operator, null);
 	}
 	
-	/**
-	 * 完成指定任务
-	 * 该方法仅仅结束活动任务，并不能驱动流程继续执行
-	 * @see SnakerEngineImpl#executeTask(String, String, java.util.Map)
-	 */
+	
+	//完成指定任务，返回的还是当前task实体对象
+	//应用层传递的都是taskId，只有在此方法中获取task实体，并且把args覆盖到task对象
 	public Task complete(String taskId, String operator, Map<String, Object> args) {
 		Task task = access().getTask(taskId);
 		AssertHelper.notNull(task, "指定的任务[id=" + taskId + "]不存在");
+
+		//使用传入的args覆盖当前task中的变量数据，后续又被复制到HistoryTask中
 		task.setVariable(JsonHelper.toJson(args));
 		if(!isAllowed(task, operator)) {
 			throw new SnakerException("当前参与者[" + operator + "]不允许执行任务[taskId=" + taskId + "]");
 		}
 
-		//复制所有的字段到history中
+		//新构造一个HistoryTask对象并且复制所有的字段到history中
 		HistoryTask history = new HistoryTask(task);
 		history.setFinishTime(DateHelper.getTime());
 		history.setTaskState(STATE_FINISH);
 		history.setOperator(operator);
 		if(history.getActorIds() == null) {
+
+			//到actor表中获取参与者列表填充到HistoryTask中
 			List<TaskActor> actors = access().getTaskActorsByTaskId(task.getId());
 			String[] actorIds = new String[actors.size()];
 			for(int i = 0; i < actors.size(); i++) {
@@ -84,10 +86,11 @@ public class TaskService extends AccessService implements ITaskService {
 			history.setActorIds(actorIds);
 		}
 
-		//把task添加到history表中，同时删除活动task
+		//把HistoryTask添加到history表中，同时删除当前task
 		access().saveHistory(history);
 		access().deleteTask(task);
 
+		//Completion由IOC容器管理的回调通知bean
 		//completion工具类，任务完成时的触发动作，当前是打出日志
         Completion completion = getCompletion();
         if(completion != null) {
@@ -502,9 +505,8 @@ public class TaskService extends AccessService implements ITaskService {
 		}
 	}
 
-	/**
-	 * 判断当前操作人operator是否允许执行taskId指定的任务
-	 */
+
+	//判断当前操作人operator是否允许执行taskId指定的任务
 	public boolean isAllowed(Task task, String operator) {
 		if(StringHelper.isNotEmpty(operator)) {
 			if(SnakerEngine.ADMIN.equalsIgnoreCase(operator)

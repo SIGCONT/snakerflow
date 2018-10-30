@@ -26,6 +26,7 @@ import org.snaker.engine.handlers.IHandler;
  */
 
 //BaseModel只有name和displayName两个属性
+//displayName一般是用户可识别的中文名称，name用作标识节点的id
 public class BaseModel implements Serializable {
 	/**
 	 * 

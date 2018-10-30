@@ -295,25 +295,20 @@ public class SnakerEngineImpl implements SnakerEngine {
 		return current;
 	}
 
-	/**
-	 * 根据任务主键ID执行任务
-	 */
 
 	//根据任务id执行指定的任务，向下中转调用，最后调用参数最多的重载方法
 	public List<Task> executeTask(String taskId) {
 		return executeTask(taskId, null);
 	}
 
-	/**
-	 * 根据任务主键ID，操作人ID执行任务
-	 */
+	
+	//根据任务id执行指定的任务，向下中转调用，最后调用参数最多的重载方法
 	public List<Task> executeTask(String taskId, String operator) {
 		return executeTask(taskId, operator, null);
 	}
 
-	/**
-	 * 根据任务主键ID，操作人ID，参数列表执行任务
-	 */
+	
+	//根据任务id执行指定的任务，返回后续待审批的task列表
 	public List<Task> executeTask(String taskId, String operator, Map<String, Object> args) {
 		//完成任务，并且构造执行对象
 		Execution execution = execute(taskId, operator, args);
@@ -324,8 +319,11 @@ public class SnakerEngineImpl implements SnakerEngine {
 
 		ProcessModel model = execution.getProcess().getModel();
 		if(model != null) {
+
+			//task执行完并被删除之后根据taskName找到流程定义中对应的节点模型，由模型来执行流程的转移
 			NodeModel nodeModel = model.getNode(execution.getTask().getTaskName());
 			//将执行对象交给该任务对应的节点模型执行
+			//模型执行流程转移时会调用持有的拦截器
 			nodeModel.execute(execution);
 		}
 		return execution.getTasks();
@@ -371,15 +369,13 @@ public class SnakerEngineImpl implements SnakerEngine {
 		return task().createTask(model, execution);
 	}
 	
-	/**
-	 * 根据任务主键ID，操作人ID，参数列表完成任务，并且构造执行对象
-	 * @param taskId 任务id
-	 * @param operator 操作人
-	 * @param args 参数列表
-	 * @return Execution
-	 */
+	
+	//完成指定任务并且构造执行对象Execution
 	private Execution execute(String taskId, String operator, Map<String, Object> args) {
-		if(args == null) args = new HashMap<String, Object>();
+		if(args == null) 
+			args = new HashMap<String, Object>();
+
+		//完成指定任务，构造HistoryTask插入到history表中，同时删除当前task，并返回当前task的实体对象
 		Task task = task().complete(taskId, operator, args);
 		if(log.isDebugEnabled()) {
 			log.debug("任务[taskId=" + taskId + "]已完成");
@@ -391,6 +387,7 @@ public class SnakerEngineImpl implements SnakerEngine {
 		order.setLastUpdator(operator);
 		order.setLastUpdateTime(DateHelper.getTime());
 		order().updateOrder(order);
+
 		//协办任务完成不产生执行对象
 		if(!task.isMajor()) {
 			return null;
@@ -406,12 +403,15 @@ public class SnakerEngineImpl implements SnakerEngine {
 				args.put(entry.getKey(), entry.getValue());
 			}
 		}
+
 		Process process = process().getProcessById(order.getProcessId());
 
-		//直接调用构造函数，execution只作为存储数据的实体
+		//直接调用构造函数构造执行对象，execution只作为存储数据的实体
 		Execution execution = new Execution(this, process, order, args);
+		//设置操作人和已被删除的当前task
 		execution.setOperator(operator);
 		execution.setTask(task);
+
 		return execution;
 	}
 

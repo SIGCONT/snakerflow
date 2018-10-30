@@ -498,6 +498,8 @@ public abstract class AbstractDBAccess implements DBAccess {
 		return queryObject(HistoryOrder.class, QUERY_HIST_ORDER + where, orderId);
 	}
 
+	//获取task的相关参与者
+	//select task_Id, actor_Id from wf_task_actor 
 	public List<TaskActor> getTaskActorsByTaskId(String taskId) {
 		String where = " where task_Id = ?";
 		return queryList(TaskActor.class, QUERY_TASK_ACTOR + where, taskId);
