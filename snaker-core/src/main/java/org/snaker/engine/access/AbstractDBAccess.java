@@ -657,8 +657,12 @@ public abstract class AbstractDBAccess implements DBAccess {
 	}
 
 
-	//snaker实现的DAO方法， 获取当前的活动任务
+	//snaker实现的DAO方法， 获取当前的活动任务列表
+	//直接从数据库wf_task表中查询，不涉及到缓存操作
 	public List<Task> getActiveTasks(Page<Task> page, QueryFilter filter) {
+
+		//select id,order_Id,task_Name,display_Name,task_Type,perform_Type,operator,create_Time,finish_Time,expire_Time,action_Url,parent_Task_Id,variable, version 
+		//from wf_task 
         StringBuilder sql = new StringBuilder(QUERY_TASK);
 		boolean isFetchActor = filter.getOperators() != null && filter.getOperators().length > 0;
 		if(isFetchActor) {

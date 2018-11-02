@@ -347,15 +347,21 @@ public class TaskService extends AccessService implements ITaskService {
      * @param taskId 任务id
      * @return TaskModel
      */
+
+	//根据taskId获取对应的模型
     public TaskModel getTaskModel(String taskId) {
+
         Task task = access().getTask(taskId);
         AssertHelper.notNull(task);
         Order order = access().getOrder(task.getOrderId());
-        AssertHelper.notNull(order);
-        Process process = ServiceContext.getEngine().process().getProcessById(order.getProcessId());
+		AssertHelper.notNull(order);
+		
+		Process process = ServiceContext.getEngine().process().getProcessById(order.getProcessId());
+		//根据taskName从ProcessModel中获取对应的节点模型
         ProcessModel model = process.getModel();
         NodeModel nodeModel = model.getNode(task.getTaskName());
-        AssertHelper.notNull(nodeModel, "任务id无法找到节点模型.");
+		AssertHelper.notNull(nodeModel, "任务id无法找到节点模型.");
+		
         if(nodeModel instanceof TaskModel) {
             return (TaskModel)nodeModel;
         } else {

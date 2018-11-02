@@ -93,10 +93,14 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	 * 根据id获取process对象
 	 * 先通过cache获取，如果返回空，就从数据库读取并put
 	 */
+
+	//根据流程定义ID获取流程对象，关键是组装Process中持有的模型对象
 	public Process getProcessById(String id) {
+
 		AssertHelper.notEmpty(id);
 		Process entity = null;
 		String processName;
+
 		Cache<String, String> nameCache = ensureAvailableNameCache();
 		Cache<String, Process> entityCache = ensureAvailableEntityCache();
 		if(nameCache != null && entityCache != null) {
@@ -105,6 +109,8 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 				entity = entityCache.get(processName);
 			}
 		}
+
+		//优先从缓存中获取process，如果取到了直接返回
 		if(entity != null) {
 			if(log.isDebugEnabled()) {
 				log.debug("obtain process[id={}] from cache.", id);
@@ -116,6 +122,9 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 			if(log.isDebugEnabled()) {
 				log.debug("obtain process[id={}] from database.", id);
 			}
+
+			//缓存中没有取到，则从数据库获取并添加到缓存中
+			//在此步骤中会解析流程定义文件，构造Model对象
 			cache(entity);
 		}
 		return entity;
@@ -285,12 +294,17 @@ public class ProcessService extends AccessService implements IProcessService, Ca
 	 * 缓存实体
 	 * @param entity 流程定义对象
 	 */
+
+	//缓存process对象，也是在这一步中构造流程对应的Model对象
 	private void cache(Process entity) {
 		Cache<String, String> nameCache = ensureAvailableNameCache();
 		Cache<String, Process> entityCache = ensureAvailableEntityCache();
+
+		//读取content字段中存储的字节数组，解析为Model对象
 		if(entity.getModel() == null && entity.getDBContent() != null) {
 			entity.setModel(ModelParser.parse(entity.getDBContent()));
 		}
+		
 		String processName = entity.getName() + DEFAULT_SEPARATOR + entity.getVersion();
 		if(nameCache != null && entityCache != null) {
 			if(log.isDebugEnabled()) {
