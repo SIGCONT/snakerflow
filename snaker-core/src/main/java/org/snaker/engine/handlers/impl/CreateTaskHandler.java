@@ -49,6 +49,8 @@ public class CreateTaskHandler implements IHandler {
 	/**
 	 * 根据任务模型、执行对象，创建下一个任务，并添加到execution对象的tasks集合中
 	 */
+
+	//根据执行对象Execution创建下一步骤的task列表
 	public void handle(Execution execution) {
 		List<Task> tasks = execution.getEngine().task().createTask(model, execution);
 		execution.addTasks(tasks);

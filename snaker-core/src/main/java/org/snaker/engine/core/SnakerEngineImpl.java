@@ -310,7 +310,7 @@ public class SnakerEngineImpl implements SnakerEngine {
 	
 	//根据任务id执行指定的任务，返回后续待审批的task列表
 	public List<Task> executeTask(String taskId, String operator, Map<String, Object> args) {
-		//完成任务，并且构造执行对象
+		//完成任务，并且构造执行对象，不负责生成下一步骤的task
 		Execution execution = execute(taskId, operator, args);
 
 		//如果是协办任务，则不产生执行对象
@@ -322,7 +322,7 @@ public class SnakerEngineImpl implements SnakerEngine {
 
 			//task执行完并被删除之后根据taskName找到流程定义中对应的节点模型，由模型来执行流程的转移
 			NodeModel nodeModel = model.getNode(execution.getTask().getTaskName());
-			//将执行对象交给该任务对应的节点模型执行
+			//将执行对象交给该任务对应的节点模型执行，会生成下一步骤的task列表
 			//模型执行流程转移时会调用持有的拦截器
 			nodeModel.execute(execution);
 		}

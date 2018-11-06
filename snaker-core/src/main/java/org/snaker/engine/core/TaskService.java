@@ -58,7 +58,7 @@ public class TaskService extends AccessService implements ITaskService {
 	}
 	
 	
-	//完成指定任务，返回的还是当前task实体对象
+	//完成指定任务，返回的还是当前task实体对象，不负责下一步骤task的生成
 	//应用层传递的都是taskId，只有在此方法中获取task实体，并且把args覆盖到task对象
 	public Task complete(String taskId, String operator, Map<String, Object> args) {
 		Task task = access().getTask(taskId);
@@ -87,6 +87,7 @@ public class TaskService extends AccessService implements ITaskService {
 		}
 
 		//把HistoryTask添加到history表中，同时删除当前task
+		//同时新增actor记录到wf_hist_task_actor表中
 		access().saveHistory(history);
 		access().deleteTask(task);
 
@@ -375,6 +376,8 @@ public class TaskService extends AccessService implements ITaskService {
 	 * @param execution 执行对象
 	 * @return List<Task> 任务列表
 	 */
+
+	//根据模型和执行对象创建下一步骤的task列表并返回
 	public List<Task> createTask(TaskModel taskModel, Execution execution) {
 		List<Task> tasks = new ArrayList<Task>();
 		
@@ -513,6 +516,7 @@ public class TaskService extends AccessService implements ITaskService {
 
 
 	//判断当前操作人operator是否允许执行taskId指定的任务
+	//从容器中获取TaskAccessStrategy的实现类帮助判断
 	public boolean isAllowed(Task task, String operator) {
 		if(StringHelper.isNotEmpty(operator)) {
 			if(SnakerEngine.ADMIN.equalsIgnoreCase(operator)
