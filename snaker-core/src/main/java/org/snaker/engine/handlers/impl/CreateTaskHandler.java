@@ -51,7 +51,10 @@ public class CreateTaskHandler implements IHandler {
 	 */
 
 	//根据执行对象Execution创建下一步骤的task列表
+	//每次执行到TaskModel时都会调用所有的拦截器
 	public void handle(Execution execution) {
+
+		//新增待办task到wf_task表中，同时新增actor到wf_task_actor表中(根据assignee拆分，没有开放给应用层介入)
 		List<Task> tasks = execution.getEngine().task().createTask(model, execution);
 		execution.addTasks(tasks);
 		

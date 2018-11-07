@@ -59,6 +59,8 @@ public class DecisionModel extends NodeModel {
 		}
 		log.info("expression is " + expression);
 		if(expression == null) throw new SnakerException("表达式解析器为空，请检查配置.");
+
+		//解析表达式得到transition节点的name
 		String next = null;
 		if(StringHelper.isNotEmpty(expr)) {
 			next = expression.eval(String.class, expr, execution.getArgs());
@@ -66,7 +68,9 @@ public class DecisionModel extends NodeModel {
 			next = decide.decide(execution);
 		}
 		log.info(execution.getOrder().getId() + "->decision expression[expr=" + expr + "] return result:" + next);
+
 		boolean isfound = false;
+		//根据表达式的解析结果next是否为空分两种情况判断
 		for(TransitionModel tm : getOutputs()) {
 			if(StringHelper.isEmpty(next)) {
 				String expr = tm.getExpr();
@@ -83,7 +87,10 @@ public class DecisionModel extends NodeModel {
 				}
 			}
 		}
-		if(!isfound) throw new SnakerException(execution.getOrder().getId() + "->decision节点无法确定下一步执行路线");
+
+		//如果没有找到对应的transition节点，则抛出异常
+		if(!isfound) 
+			throw new SnakerException(execution.getOrder().getId() + "->decision节点无法确定下一步执行路线");
 	}
 	
 	public String getExpr() {

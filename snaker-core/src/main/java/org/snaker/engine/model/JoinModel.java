@@ -30,6 +30,7 @@ public class JoinModel extends NodeModel {
 	
 	public void exec(Execution execution) {
 		fire(new MergeBranchHandler(this), execution);
-		if(execution.isMerged()) runOutTransition(execution);
+		if(execution.isMerged()) 
+			runOutTransition(execution);
 	}
 }

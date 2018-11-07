@@ -378,18 +378,25 @@ public class TaskService extends AccessService implements ITaskService {
 	 */
 
 	//根据模型和执行对象创建下一步骤的task列表并返回
+	//注意task的关键字段是如何设置的 taskName operator actors
 	public List<Task> createTask(TaskModel taskModel, Execution execution) {
 		List<Task> tasks = new ArrayList<Task>();
 		
 		Map<String, Object> args = execution.getArgs();
-		if(args == null) args = new HashMap<String, Object>();
+		if(args == null) 
+			args = new HashMap<String, Object>();
 		Date expireDate = DateHelper.processTime(args, taskModel.getExpireTime());
 		Date remindDate = DateHelper.processTime(args, taskModel.getReminderTime());
 		String form = (String)args.get(taskModel.getForm());
 		String actionUrl = StringHelper.isEmpty(form) ? taskModel.getForm() : form;
 		
+		//查找actors列表，一般是直接把assignee使用逗号拆分，没有开放给应用层介入逻辑
 		String[] actors = getTaskActors(taskModel, execution);
+		//以 S-ACTOR 为属性名添加到args里
 		args.put(Task.KEY_ACTOR, StringHelper.getStringByArray(actors));
+
+		//创建待办task实体对象，还没有入库
+		//根据TaskModel的name属性设置taskName字段，displayName属性设置displayName字段
 		Task task = createTaskBase(taskModel, execution);
 		task.setActionUrl(actionUrl);
 		task.setExpireDate(expireDate);
@@ -398,6 +405,7 @@ public class TaskService extends AccessService implements ITaskService {
 		
 		if(taskModel.isPerformAny()) {
 			//任务执行方式为参与者中任何一个执行即可驱动流程继续流转，该方法只产生一个task
+			//保存task到wf_task表中，保存actors到wf_task_actor表中
 			task = saveTask(task, actors);
 			task.setRemindDate(remindDate);
 			tasks.add(task);
@@ -424,10 +432,15 @@ public class TaskService extends AccessService implements ITaskService {
 	 * @param execution 执行对象
 	 * @return Task任务对象
 	 */
+
+	//创建待办task，注意task的关键字段是如何设置的 taskName
+	//返回构造好的实体对象，还没有入库
 	private Task createTaskBase(TaskModel model, Execution execution) {
 		Task task = new Task();
 		task.setOrderId(execution.getOrder().getId());
+		//使用TaskModel的name属性设置taskName字段
 		task.setTaskName(model.getName());
+		//使用TaskModel的displayName设置displayName字段
 		task.setDisplayName(model.getDisplayName());
 		task.setCreateTime(DateHelper.getTime());
 		if(model.isMajor()) {
@@ -459,6 +472,8 @@ public class TaskService extends AccessService implements ITaskService {
 	 * @param execution 执行对象
 	 * @return 参与者数组
 	 */
+
+	//查找参与者列表，向下中转调用，非常重要
 	private String[] getTaskActors(TaskModel model, Execution execution) {
 		Object assigneeObject = null;
         AssignmentHandler handler = model.getAssignmentHandlerObject();
@@ -480,8 +495,13 @@ public class TaskService extends AccessService implements ITaskService {
 	 * @param actors 参与者对象
 	 * @return 参与者数组
 	 */
+
+	//返回参与者列表，如果直接使用assignee属性，则没有开放给应用层介入逻辑
 	private String[] getTaskActors(Object actors) {
-		if(actors == null) return null;
+
+		if(actors == null) 
+			return null;
+
 		String[] results;
 		if(actors instanceof String) {
 			//如果值为字符串类型，则使用逗号,分隔

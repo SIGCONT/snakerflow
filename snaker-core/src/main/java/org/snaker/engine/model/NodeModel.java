@@ -92,7 +92,7 @@ public abstract class NodeModel extends BaseModel implements Action {
 	 * @param execution 执行对象
 	 */
 
-	//遍历输出变迁集合，和拦截器类似，把execution交给每一个变迁对象执行，不会对执行流程产生影响
+	//遍历输出transition节点集合，和拦截器类似，把execution交给每一个变迁对象执行
 	protected void runOutTransition(Execution execution) {
 		for (TransitionModel tm : getOutputs()) {
 			tm.setEnabled(true);

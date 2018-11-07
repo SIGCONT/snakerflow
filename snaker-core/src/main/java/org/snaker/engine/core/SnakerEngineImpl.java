@@ -193,7 +193,8 @@ public class SnakerEngineImpl implements SnakerEngine {
 	 * 根据流程定义ID，操作人ID，参数列表启动流程实例
 	 */
 	public Order startInstanceById(String id, String operator, Map<String, Object> args) {
-		if(args == null) args = new HashMap<String, Object>();
+		if(args == null) 
+			args = new HashMap<String, Object>();
 
 		//获取id对应的流程对象
 		Process process = process().getProcessById(id);
@@ -246,8 +247,9 @@ public class SnakerEngineImpl implements SnakerEngine {
 
 		//创建order并得到执行对象，其中保存了engine、process、order、args
 		Execution execution = execute(process, operator, args, null, null);
-		//process的ProcessModel不知道在什么地方设置进去，但是很重要？？？
-		//拦截器的调用就是在Model类的execute方法中，前后置拦截器的调用都是在order创建之前
+
+		//拦截器的调用就是在Model类的execute方法中，前后置拦截器的调用都是在order创建之后
+		//由Model来执行流程的进行和下一步骤task的创建
 		if(process.getModel() != null) {
 			StartModel start = process.getModel().getStart();
 			AssertHelper.notNull(start, "流程定义[name=" + process.getName() + ", version=" + process.getVersion() + "]没有开始节点");
@@ -284,14 +286,16 @@ public class SnakerEngineImpl implements SnakerEngine {
 	//创建流程实例，并返回执行对象，传入的参数process流程对象，operator操作人，用户提交的参数args
 	private Execution execute(Process process, String operator, Map<String, Object> args, 
 			String parentId, String parentNodeName) {
+
 		Order order = order().createOrder(process, operator, args, parentId, parentNodeName);
 		if(log.isDebugEnabled()) {
 			log.debug("创建流程实例对象:" + order);
 		}
 
-		//创建执行对象实体，传入engine当前snaker主体类，process流程对象，order新创建的实例对象，args用户提交的map参数
+		//创建执行对象实体，传入engine当前snaker引擎对象，process流程对象，order新创建的实例对象，args用户提交的map参数
 		Execution current = new Execution(this, process, order, args);
 		current.setOperator(operator);
+
 		return current;
 	}
 
