@@ -80,7 +80,7 @@ public abstract class NodeModel extends BaseModel implements Action {
 	 */
 
 	//模板方法，指定执行流程，exec方法留给子类实现
-	//每次NodeModel类的execute方法被调用，都会把execution交给所有的拦截器去调用
+	//每次NodeModel类的execute方法被调用，都会把execution交给节点中配置的拦截器去调用
 	public void execute(Execution execution) {
 		intercept(preInterceptorList, execution);
 		exec(execution);
@@ -190,13 +190,14 @@ public abstract class NodeModel extends BaseModel implements Action {
 	}
 
 	//给拦截器集合中添加拦截器，传入拦截器类名，多个类名用逗号分割
-	//实例化为对象后添加到集合中
+	//反射实例化为对象后添加到集合中，不由IOC容器负责管理，捕获所有异常不往外抛出
 	public void setPreInterceptors(String preInterceptors) {
 		this.preInterceptors = preInterceptors;
 		if(StringHelper.isNotEmpty(preInterceptors)) {
 			for(String interceptor : preInterceptors.split(",")) {
 				SnakerInterceptor instance = (SnakerInterceptor)ClassHelper.newInstance(interceptor);
-				if(instance != null) this.preInterceptorList.add(instance);
+				if(instance != null) 
+					this.preInterceptorList.add(instance);
 			}
 		}
 	}
@@ -206,13 +207,14 @@ public abstract class NodeModel extends BaseModel implements Action {
 	}
 
 	//给拦截器集合中添加拦截器，传入拦截器类名，多个类名用逗号分割
-	//实例化为对象后添加到集合中
+	//反射实例化为对象后添加到集合中，不由IOC容器负责管理，捕获所有异常不往外抛出
 	public void setPostInterceptors(String postInterceptors) {
 		this.postInterceptors = postInterceptors;
 		if(StringHelper.isNotEmpty(postInterceptors)) {
 			for(String interceptor : postInterceptors.split(",")) {
 				SnakerInterceptor instance = (SnakerInterceptor)ClassHelper.newInstance(interceptor);
-				if(instance != null) this.postInterceptorList.add(instance);
+				if(instance != null) 
+					this.postInterceptorList.add(instance);
 			}
 		}
 	}

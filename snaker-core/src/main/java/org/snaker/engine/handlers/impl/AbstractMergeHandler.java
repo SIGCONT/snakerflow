@@ -34,7 +34,8 @@ import org.snaker.engine.model.TaskModel;
  */
 public abstract class AbstractMergeHandler implements IHandler {
 
-	//会签时分支合并的处理流程
+	//会签时分支合并的处理流程，合并状态存储到execution
+	//全部合并后流程才会向下流转
 	public void handle(Execution execution) {
 		/**
 		 * 查询当前流程实例的无法参与合并的node列表

@@ -165,7 +165,7 @@ public class Configuration {
 				NodeList nodeList = configElement.getChildNodes();
 				int nodeSize = nodeList.getLength();
 
-				//遍历snaker配置文件中的bean元素，向服务工厂ServiceContext中注册名称和类型
+				//遍历snaker配置文件中的bean元素，向服务注册中心ServiceContext中注册名称和类型
 				for(int i = 0; i < nodeSize; i++) {
 					Node node = nodeList.item(i);
 					if (node.getNodeType() == Node.ELEMENT_NODE) {

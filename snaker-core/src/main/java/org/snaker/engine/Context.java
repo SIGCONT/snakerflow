@@ -23,6 +23,8 @@ import org.snaker.engine.cfg.Configuration;
  * @author yuqs
  * @since 1.5
  */
+
+//snaker中定义的服务注册中心的接口
 public interface Context {
 	/**
 	 * 根据服务名称、实例向服务工厂注册

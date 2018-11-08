@@ -62,6 +62,7 @@ public class ModelParser {
 				NodeList nodeList = processE.getChildNodes();
 				int nodeSize = nodeList.getLength();
 				//遍历process元素下的子元素，解析得到NodeModel,填充到process的List<NodeModel> nodes字段中
+				//除了process元素外，所有的子元素都是NodeModel
 				for(int i = 0; i < nodeSize; i++) {
 					Node node = nodeList.item(i);
 					if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -70,7 +71,9 @@ public class ModelParser {
 					}
 				}
 				
-				//循环节点模型，构造变迁输入、输出的source、target
+				//循环节点列表，构造变迁输入、输出的source、target
+				//transition中添加输出目标NodeModel
+				//NodeModel中添加输入来源transition集合
 				for(NodeModel node : process.getNodes()) {
 					for(TransitionModel transition : node.getOutputs()) {
 						String to = transition.getTo();
@@ -108,6 +111,7 @@ public class ModelParser {
 		try {
 			//根据元素名称从IOC容器中查找对应的parser来解析
 			//parser的定义存储在base.config.xml中，在engine类的初始化阶段解析到IOC容器中
+			//nodeParser有自身状态，无法并发使用
 			nodeParser = ServiceContext.getContext().findByName(nodeName, NodeParser.class);
 			nodeParser.parse(element);
 			return nodeParser.getModel();
